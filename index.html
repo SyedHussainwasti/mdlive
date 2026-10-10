@@ -4,89 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Markdown Live — editor + preview</title>
-<style>
-  :root{
-    --bg:#0d1117; --card:#161b22; --border:#30363d;
-    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
-    --code-bg:#0d1117;
-  }
-  *{box-sizing:border-box; margin:0; padding:0;}
-  body{
-    background:var(--bg); color:var(--text);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    min-height:100vh; padding:20px 16px 40px;
-  }
-  .wrap{max-width:1100px; margin:0 auto;}
-  header{text-align:center; margin-bottom:18px;}
-  header h1{font-size:1.5rem; font-weight:600;}
-  header h1 span{color:var(--green);}
-  header p{color:var(--muted); font-size:.85rem; margin-top:6px;}
-  .toolbar{display:flex; justify-content:flex-end; margin-bottom:10px;}
-  .toolbar button{
-    background:var(--card); color:var(--text); border:1px solid var(--border);
-    border-radius:8px; padding:8px 14px; font-size:.85rem; cursor:pointer;
-  }
-  .toolbar button:hover{border-color:var(--accent);}
-  .panes{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
-  .pane{
-    background:var(--card); border:1px solid var(--border); border-radius:12px;
-    overflow:hidden; display:flex; flex-direction:column; min-width:0;
-  }
-  .pane-head{
-    padding:10px 14px; font-size:.75rem; font-weight:600; letter-spacing:.5px;
-    text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border);
-  }
-  #src{
-    flex:1; min-height:420px; background:var(--bg); color:var(--text);
-    border:none; outline:none; resize:vertical; padding:14px;
-    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-    font-size:.88rem; line-height:1.6;
-  }
-  #preview{padding:16px 18px; min-height:420px; overflow-wrap:break-word; font-size:.95rem; line-height:1.65;}
-  #preview h1,#preview h2,#preview h3,#preview h4,#preview h5,#preview h6{
-    margin:.8em 0 .4em; line-height:1.25; font-weight:600;
-  }
-  #preview h1{font-size:1.7rem; border-bottom:1px solid var(--border); padding-bottom:.3em;}
-  #preview h2{font-size:1.4rem; border-bottom:1px solid var(--border); padding-bottom:.3em;}
-  #preview h3{font-size:1.2rem;}
-  #preview p{margin:.6em 0;}
-  #preview a{color:var(--accent); text-decoration:none;}
-  #preview a:hover{text-decoration:underline;}
-  #preview code{
-    background:rgba(110,118,129,.25); padding:.15em .4em; border-radius:6px;
-    font-size:.85em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  }
-  #preview pre{
-    background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
-    padding:14px; overflow-x:auto; margin:.8em 0;
-  }
-  #preview pre code{background:none; padding:0;}
-  #preview ul,#preview ol{margin:.6em 0; padding-left:1.8em;}
-  #preview li{margin:.25em 0;}
-  #preview blockquote{
-    border-left:3px solid var(--border); color:var(--muted);
-    margin:.8em 0; padding:.2em 1em;
-  }
-  #preview blockquote p{margin:.3em 0;}
-  #preview hr{border:none; border-top:1px solid var(--border); margin:1.2em 0;}
-  #preview strong{font-weight:600;}
-  .hint{text-align:center; color:var(--muted); font-size:.78rem; margin-top:14px;}
-  @media (max-width:720px){
-    .panes{grid-template-columns:1fr;}
-    #src{min-height:220px;}
-    #preview{min-height:260px;}
-  }
-</style>
+<!-- all the page styling lives in styles.css -->
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="wrap">
+  <!-- the top title area -->
   <header>
     <h1><span>▸</span> Markdown Live</h1>
     <p>Type on the left, see it rendered on the right — instantly.</p>
   </header>
+  <!-- the button row: copies the preview's HTML -->
   <div class="toolbar">
     <button id="copyHtml" type="button">Copy HTML</button>
   </div>
+  <!-- the two boxes: markdown typing box on the left, live preview on the right -->
   <div class="panes">
     <div class="pane">
       <div class="pane-head">Markdown</div>
@@ -97,122 +29,10 @@
       <div id="preview"></div>
     </div>
   </div>
+  <!-- the small note at the bottom of the page -->
   <p class="hint">Supports headings, bold, italic, code, links, lists, quotes &amp; rules. No servers — everything runs in your browser.</p>
 </div>
-<script>
-// ==APP-LOGIC-START==
-function escapeHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
-function mdInline(s){
-  // s must already be HTML-escaped
-  var codes=[];
-  s=s.replace(/`([^`\n]+)`/g,function(m,c){
-    codes.push('<code>'+c+'</code>');
-    return '\x00'+(codes.length-1)+'\x00';
-  });
-  s=s.replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>');
-  s=s.replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>');
-  s=s.replace(/__([^_]+)__/g,'<strong>$1</strong>');
-  s=s.replace(/(^|[^_])_([^_\n]+)_/g,'$1<em>$2</em>');
-  s=s.replace(/\[([^\]]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)/g,function(m,t,u){
-    u=u.replace(/"/g,'&quot;');
-    return '<a href="'+u+'" target="_blank" rel="noopener">'+t+'</a>';
-  });
-  s=s.replace(/\x00(\d+)\x00/g,function(m,i){return codes[+i];});
-  return s;
-}
-function parseMarkdown(src){
-  var fenced=[];
-  src=src.replace(/```(\w*)\n([\s\S]*?)\n```/g,function(m,lang,code){
-    fenced.push(code);
-    return '\x01'+(fenced.length-1)+'\x01';
-  });
-  var lines=src.split('\n'), html='', i=0, listBuf=null;
-  function flushList(){
-    if(listBuf){
-      html+='<'+listBuf.type+'>'+listBuf.items.map(function(it){
-        return '<li>'+mdInline(escapeHtml(it))+'</li>';
-      }).join('')+'</'+listBuf.type+'>';
-      listBuf=null;
-    }
-  }
-  var PARA_STOP=/^(#{1,6}\s|>\s?|\s*([-*+])\s|\s*\d+[.)]\s|(\*\*\*|---|___)\s*$|\x01\d+\x01)/;
-  while(i<lines.length){
-    var line=lines[i], m;
-    var fence=line.trim().match(/^\x01(\d+)\x01$/);
-    if(fence){flushList();html+='<pre><code>'+escapeHtml(fenced[+fence[1]])+'</code></pre>';i++;continue;}
-    if(/^\s*$/.test(line)){flushList();i++;continue;}
-    if(m=line.match(/^(#{1,6})\s+(.*)$/)){
-      flushList();
-      html+='<h'+m[1].length+'>'+mdInline(escapeHtml(m[2]))+'</h'+m[1].length+'>';
-      i++;continue;
-    }
-    if(/^(\*\*\*|---|___)\s*$/.test(line.trim())){flushList();html+='<hr>';i++;continue;}
-    if(/^>\s?/.test(line)){
-      flushList();
-      var bq=[];
-      while(i<lines.length&&/^>\s?/.test(lines[i])){bq.push(lines[i].replace(/^>\s?/,''));i++;}
-      html+='<blockquote>'+bq.map(function(l){
-        return '<p>'+mdInline(escapeHtml(l))+'</p>';
-      }).join('')+'</blockquote>';
-      continue;
-    }
-    if(m=line.match(/^\s*([-*+])\s+(.*)$/)){
-      if(!listBuf||listBuf.type!=='ul'){flushList();listBuf={type:'ul',items:[]};}
-      listBuf.items.push(m[2]);i++;continue;
-    }
-    if(m=line.match(/^\s*(\d+)[.)]\s+(.*)$/)){
-      if(!listBuf||listBuf.type!=='ol'){flushList();listBuf={type:'ol',items:[]};}
-      listBuf.items.push(m[2]);i++;continue;
-    }
-    flushList();
-    var para=[];
-    while(i<lines.length&&!/^\s*$/.test(lines[i])&&!PARA_STOP.test(lines[i])){
-      para.push(lines[i]);i++;
-    }
-    html+='<p>'+mdInline(escapeHtml(para.join('\n'))).replace(/\n/g,'<br>')+'</p>';
-  }
-  flushList();
-  return html;
-}
-// ==APP-LOGIC-END==
-if(typeof document!=='undefined'){
-  var srcEl=document.getElementById('src');
-  var prevEl=document.getElementById('preview');
-  var SAMPLE=[
-    '# Markdown Live','',
-    'Type on the left — watch it render **instantly** on the right.','',
-    '## Text styles','',
-    'Make words **bold**, *italic*, or `code`. Even ***both***.',
-    'Add [links](https://example.com "optional title") anywhere.','',
-    '## Lists','',
-    '- Apples','- Oranges','- Bananas','',
-    '1. First','2. Second','3. Third','',
-    '## Code blocks','',
-    '```js','function hello() {','  return "<b>escaped</b> & safe";','}','```','',
-    '## Quotes & rules','',
-    '> Stay hungry, stay foolish.','',
-    '---','',
-    'That\u2019s the tour — now delete this and write your own.'
-  ].join('\n');
-  function render(){prevEl.innerHTML=parseMarkdown(srcEl.value);}
-  srcEl.value=SAMPLE;
-  srcEl.addEventListener('input',render);
-  render();
-  document.getElementById('copyHtml').addEventListener('click',function(){
-    var done=function(){this.textContent='Copied!';var b=this;setTimeout(function(){b.textContent='Copy HTML';},1200);};
-    if(navigator.clipboard&&navigator.clipboard.writeText){
-      navigator.clipboard.writeText(prevEl.innerHTML).then(done.bind(this)).catch(function(){fallback();});
-    }else{fallback();}
-    function fallback(){
-      var ta=document.createElement('textarea');
-      ta.value=prevEl.innerHTML;document.body.appendChild(ta);ta.select();
-      try{document.execCommand('copy');}catch(e){}
-      document.body.removeChild(ta);done.call(this);
-    }
-  });
-}
-</script>
+<!-- all the page logic lives in app.js -->
+<script src="app.js"></script>
 </body>
 </html>

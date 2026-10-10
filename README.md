@@ -16,3 +16,9 @@ updates on every keystroke. Hit **Copy HTML** to grab the rendered output.
 - All raw HTML is escaped before rendering; code blocks and inline code are
   double-protected so `<script>` can never execute.
 - 100% client-side, zero network requests.
+
+## Files
+
+- `index.html` — the page layout (the words and boxes you see)
+- `styles.css` — all the colors and styling, with plain-words notes
+- `app.js` — the markdown-to-HTML logic, with plain-words notes on every step

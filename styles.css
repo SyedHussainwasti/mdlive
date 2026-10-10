@@ -1,0 +1,138 @@
+/* the color names used all over the page (dark theme) */
+:root{
+  --bg:#0d1117; --card:#161b22; --border:#30363d;
+  --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
+  --code-bg:#0d1117;
+}
+
+/* removes the browser's default spacing on everything, so we start clean */
+*{box-sizing:border-box; margin:0; padding:0;}
+
+/* the whole page: dark background, light text, comfy font, some breathing room */
+body{
+  background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  min-height:100vh; padding:20px 16px 40px;
+}
+
+/* centers the content and stops it getting too wide on big screens */
+.wrap{max-width:1100px; margin:0 auto;}
+
+/* the top title area, centered */
+header{text-align:center; margin-bottom:18px;}
+
+/* the big "Markdown Live" title */
+header h1{font-size:1.5rem; font-weight:600;}
+
+/* the little arrow in the title, painted green */
+header h1 span{color:var(--green);}
+
+/* the small grey line under the title */
+header p{color:var(--muted); font-size:.85rem; margin-top:6px;}
+
+/* the row holding the Copy HTML button, pushed to the right */
+.toolbar{display:flex; justify-content:flex-end; margin-bottom:10px;}
+
+/* the Copy HTML button itself */
+.toolbar button{
+  background:var(--card); color:var(--text); border:1px solid var(--border);
+  border-radius:8px; padding:8px 14px; font-size:.85rem; cursor:pointer;
+}
+
+/* the button's edge turns blue when you hover over it */
+.toolbar button:hover{border-color:var(--accent);}
+
+/* the two boxes side by side (editor left, preview right) */
+.panes{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+
+/* each box: a dark card with rounded corners */
+.pane{
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  overflow:hidden; display:flex; flex-direction:column; min-width:0;
+}
+
+/* the small label bar on top of each box ("Markdown" / "Preview") */
+.pane-head{
+  padding:10px 14px; font-size:.75rem; font-weight:600; letter-spacing:.5px;
+  text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--border);
+}
+
+/* the typing box where you write markdown */
+#src{
+  flex:1; min-height:420px; background:var(--bg); color:var(--text);
+  border:none; outline:none; resize:vertical; padding:14px;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  font-size:.88rem; line-height:1.6;
+}
+
+/* the preview box where the rendered result shows */
+#preview{padding:16px 18px; min-height:420px; overflow-wrap:break-word; font-size:.95rem; line-height:1.65;}
+
+/* all headings inside the preview */
+#preview h1,#preview h2,#preview h3,#preview h4,#preview h5,#preview h6{
+  margin:.8em 0 .4em; line-height:1.25; font-weight:600;
+}
+
+/* the biggest heading in the preview, with a line under it */
+#preview h1{font-size:1.7rem; border-bottom:1px solid var(--border); padding-bottom:.3em;}
+
+/* the second-biggest heading in the preview, with a line under it */
+#preview h2{font-size:1.4rem; border-bottom:1px solid var(--border); padding-bottom:.3em;}
+
+/* the third heading size in the preview */
+#preview h3{font-size:1.2rem;}
+
+/* paragraphs inside the preview */
+#preview p{margin:.6em 0;}
+
+/* links inside the preview, blue with no underline */
+#preview a{color:var(--accent); text-decoration:none;}
+
+/* links get underlined when you hover over them */
+#preview a:hover{text-decoration:underline;}
+
+/* little inline code chips inside the preview */
+#preview code{
+  background:rgba(110,118,129,.25); padding:.15em .4em; border-radius:6px;
+  font-size:.85em; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+
+/* code blocks (the big fenced ones) inside the preview */
+#preview pre{
+  background:var(--code-bg); border:1px solid var(--border); border-radius:8px;
+  padding:14px; overflow-x:auto; margin:.8em 0;
+}
+
+/* code inside a code block: no chip styling, just plain */
+#preview pre code{background:none; padding:0;}
+
+/* bullet and numbered lists inside the preview */
+#preview ul,#preview ol{margin:.6em 0; padding-left:1.8em;}
+
+/* each list item */
+#preview li{margin:.25em 0;}
+
+/* quote boxes inside the preview */
+#preview blockquote{
+  border-left:3px solid var(--border); color:var(--muted);
+  margin:.8em 0; padding:.2em 1em;
+}
+
+/* paragraphs inside quote boxes, tighter spacing */
+#preview blockquote p{margin:.3em 0;}
+
+/* the horizontal rule line inside the preview */
+#preview hr{border:none; border-top:1px solid var(--border); margin:1.2em 0;}
+
+/* bold text inside the preview */
+#preview strong{font-weight:600;}
+
+/* the small grey note at the very bottom of the page */
+.hint{text-align:center; color:var(--muted); font-size:.78rem; margin-top:14px;}
+
+/* on small phone screens: stack the two boxes on top of each other */
+@media (max-width:720px){
+  .panes{grid-template-columns:1fr;}
+  #src{min-height:220px;}
+  #preview{min-height:260px;}
+}
